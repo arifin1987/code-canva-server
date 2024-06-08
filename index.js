@@ -24,16 +24,66 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const laptopCollection = client.db("codecanva").collection("laptops");
+    const cartCollection = client.db("codecanva").collection("carts");
 
     app.get("/laptops", async (req, res) => {
       const result = await laptopCollection.find().toArray();
       res.send(result);
     });
 
+    app.post("/laptops", async (req, res) => {
+      const item = req.body;
+      const result = await laptopCollection.insertOne(item);
+      res.send(result);
+    });
     app.get("/laptops/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await laptopCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.delete("/laptops/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await laptopCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.put("/laptops/:id", async (req, res) => {
+      const id = req.params.id;
+      const laptop = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          image: laptop.image,
+          price: laptop.price,
+          name: laptop.name,
+          configuration: laptop.configuration,
+          product_rating: laptop.product_rating,
+          brand: laptop.brand,
+          flash_sale: laptop.flash_sale,
+          top_category: laptop.top_category,
+          description: laptop.description,
+        },
+      };
+      const options = { upsert: true };
+      const result = await laptopCollection.updateOne(
+        query,
+        updateDoc,
+        options
+      );
+
+      res.send(result);
+    });
+
+    app.post("/carts", async (req, res) => {
+      const item = req.body;
+      const result = await cartCollection.insertOne(item);
+      res.send(result);
+    });
+    app.get("/carts", async (req, res) => {
+      const result = await cartCollection.find().toArray();
       res.send(result);
     });
     // Send a ping to confirm a successful connection
